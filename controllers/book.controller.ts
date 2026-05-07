@@ -3,7 +3,8 @@ import { Book } from "../models/book.model";
 import { sendError, sendSuccess } from "../shared/responses";
 import cloudinary from "../config/cloudinary";
 import * as streamifier from "streamifier";
-// GET /books
+
+// GET /books (protected)
 export const getBooks = async (req: Request, res: Response) => {
   try {
     const page = Number(req.query.page) || 1;
@@ -45,7 +46,7 @@ export const getBooks = async (req: Request, res: Response) => {
   }
 };
 
-// POST /books
+// POST /books (protected)
 export const createBook = async (req: Request, res: Response) => {
   try {
     const { title, author } = req.body;
@@ -57,11 +58,20 @@ export const createBook = async (req: Request, res: Response) => {
       });
     }
 
-    //  Get userId from middleware
-    const userId = (req as any).user?.userId;
+    //  FIXED: JWT now uses "id"
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return sendError(res, {
+        statusCode: 401,
+        message: "Unauthorized user",
+      });
+    }
 
     let imageUrl = "";
+
     console.log("REQ.FILE:", req.file);
+
     if (req.file) {
       console.log("Uploading image...");
 
@@ -77,14 +87,17 @@ export const createBook = async (req: Request, res: Response) => {
               if (!result) {
                 return reject(new Error("Upload failed"));
               }
+
               resolve(result.secure_url);
             },
           );
 
           const fileBuffer = req.file?.buffer;
+
           if (!fileBuffer) {
             return reject(new Error("No file buffer available"));
           }
+
           streamifier.createReadStream(fileBuffer).pipe(stream);
         });
       };
@@ -105,6 +118,7 @@ export const createBook = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("CREATE BOOK ERROR:", error);
+
     return sendError(res, {
       statusCode: 500,
       message: "Failed to create book",

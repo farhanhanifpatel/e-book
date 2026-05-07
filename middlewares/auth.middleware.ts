@@ -1,36 +1,27 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { TypedResponse } from "../shared/types";
-import { sendError } from "../shared/responses";
-import { catchAsync } from "../utils/catchAsync";
-import { AppError } from "../shared/AppError";
 
-export interface AuthRequest extends Request {
-  user: any;
-  userId?: string;
-}
-export const authMiddleware = catchAsync(
-  async (req: AuthRequest, res: TypedResponse<null>, next: NextFunction) => {
-    const token = req.cookies.accessToken;
+export const authMiddleware = (req: any, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return next(new AppError("Unauthorized! Please log in.", 401));
-    }
+  if (!authHeader) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized! Please log in.",
+    });
+  }
 
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
-      userId: string;
-      role: string;
-    };
+  const token = authHeader.split(" ")[1];
 
-    if (!decoded.userId) {
-      return next(new AppError("Invalid token", 401));
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
 
-    req.user = {
-      userId: decoded.userId,
-      role: decoded.role,
-    };
-
+    req.user = decoded; // attach user
     next();
-  },
-);
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token",
+    });
+  }
+};
