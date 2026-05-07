@@ -7,7 +7,7 @@ import userRoute from "./routes/auth.routes";
 import bookRoute from "./routes/book.routes";
 import { connectDB } from "./config/db_config";
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 app.use(cookieParse());
 app.use(express.json());
 
@@ -22,7 +22,8 @@ app.use("/api/books", bookRoute);
 
 app.use(errorHandling);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", async () => {
   console.log(`Server is running on port ${PORT}`);
-  connectDB();
+
+  await connectDB();
 });

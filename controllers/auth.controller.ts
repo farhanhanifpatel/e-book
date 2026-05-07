@@ -117,3 +117,37 @@ export const signup = catchAsync(
     });
   },
 );
+
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+
+    const user = await User.findById(userId).select("-password");
+
+    return sendSuccess(res, {
+      message: "Profile fetched successfully",
+      data: user,
+    });
+  } catch (error) {
+    return sendError(res, {
+      statusCode: 401,
+      message: "Unauthorized",
+    });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("accessToken");
+
+    return sendSuccess(res, {
+      message: "Logged out successfully",
+      data: null,
+    });
+  } catch (error) {
+    return sendError(res, {
+      statusCode: 500,
+      message: "Logout failed",
+    });
+  }
+};
