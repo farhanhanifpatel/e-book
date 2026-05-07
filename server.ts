@@ -15,8 +15,11 @@ app.use(
   cors({
     origin: ["http://localhost:5173", "https://book-client-self.vercel.app"],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   }),
 );
+
+app.options("*", cors());
 app.use("/api/auth", userRoute);
 app.use("/api/books", bookRoute);
 
