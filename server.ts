@@ -7,7 +7,7 @@ import userRoute from "./routes/auth.routes";
 import bookRoute from "./routes/book.routes";
 import { connectDB } from "./config/db_config";
 const app = express();
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = Number(process.env.PORT) || 4000;
 app.use(cookieParse());
 app.use(express.json());
 
