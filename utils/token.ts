@@ -16,8 +16,8 @@ export const generateTokens = (userId: string) => {
 export const setCookies = (res: Response, accessToken: string) => {
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: false,
+    sameSite: "lax",
     maxAge: 24 * 60 * 60 * 1000, // 🔥 1 day (increase from 15 min)
     path: "/",
   });
